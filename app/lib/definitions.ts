@@ -95,7 +95,6 @@ export type Product = {
   description: string;
   price: number;       // stored in cents
   stock: number;
-  image_url: string;
 };
 
 export type ProductsTable = {
@@ -104,7 +103,6 @@ export type ProductsTable = {
   description: string;
   price: number;       // stored in cents
   stock: number;
-  image_url: string;
 };
 
 export type ProductForm = {
@@ -113,7 +111,6 @@ export type ProductForm = {
   description: string;
   price: number;       // stored in cents
   stock: number;
-  image_url: string;
 };
 
 export type ProductField = {
