@@ -144,55 +144,49 @@ const revenue = [
   { month: 'Dec', revenue: 4800 },
 ];
 
-// Prices are stored in cents
+// Prices stored directly in pesos
 const products = [
   {
     id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-    name: 'Wireless Keyboard',
-    description: 'Compact wireless keyboard with long battery life.',
-    price: 4999,   // $49.99
-    stock: 120,
-    image_url: '/products/default.png',
+    name: 'Teclado Inalámbrico',
+    description: 'Teclado compacto inalámbrico con larga duración de batería.',
+    price: 49999,
+    stock: 120
   },
   {
     id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
-    name: 'USB-C Hub',
-    description: '7-in-1 USB-C hub with HDMI, USB 3.0, and SD card reader.',
-    price: 3499,   // $34.99
-    stock: 85,
-    image_url: '/products/default.png',
+    name: 'Hub USB-C',
+    description: 'Hub USB-C 7 en 1 con HDMI, USB 3.0 y lector de tarjetas SD.',
+    price: 34999,
+    stock: 85
   },
   {
     id: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
-    name: 'Mechanical Mouse',
-    description: 'Ergonomic mechanical mouse with adjustable DPI.',
-    price: 5999,   // $59.99
-    stock: 60,
-    image_url: '/products/default.png',
+    name: 'Mouse Mecánico',
+    description: 'Mouse ergonómico con DPI ajustable.',
+    price: 59999,
+    stock: 60
   },
   {
     id: 'd4e5f6a7-b8c9-0123-defa-234567890123',
-    name: 'Monitor Stand',
-    description: 'Adjustable aluminum monitor stand with cable management.',
-    price: 7999,   // $79.99
-    stock: 40,
-    image_url: '/products/default.png',
+    name: 'Soporte para Monitor',
+    description: 'Soporte de aluminio ajustable con gestión de cables.',
+    price: 79999,
+    stock: 40
   },
   {
     id: 'e5f6a7b8-c9d0-1234-efab-345678901234',
     name: 'Webcam HD 1080p',
-    description: 'Full HD webcam with built-in microphone and auto-focus.',
-    price: 8999,   // $89.99
-    stock: 30,
-    image_url: '/products/default.png',
+    description: 'Webcam Full HD con micrófono integrado y enfoque automático.',
+    price: 89999,
+    stock: 30
   },
   {
     id: 'f6a7b8c9-d0e1-2345-fabc-456789012345',
-    name: 'Desk Lamp LED',
-    description: 'Touch-controlled LED desk lamp with adjustable color temperature.',
-    price: 2999,   // $29.99
-    stock: 200,
-    image_url: '/products/default.png',
+    name: 'Lámpara LED de Escritorio',
+    description: 'Lámpara LED táctil con temperatura de color ajustable.',
+    price: 29999,
+    stock: 200
   },
 ];
 
