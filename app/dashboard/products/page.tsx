@@ -1,7 +1,7 @@
 import { fetchFilteredProducts, fetchProductsPages } from '@/app/lib/data';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { CreateProduct, UpdateProduct } from '@/app/ui/products/buttons';
 
 export default async function ProductsPage({
   searchParams,
@@ -21,13 +21,7 @@ export default async function ProductsPage({
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Link
-          href="/dashboard/products/create"
-          className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500"
-        >
-          <span className="hidden md:block">Create Product</span>
-          <PlusIcon className="h-5 md:ml-4" />
-        </Link>
+        <CreateProduct />
       </div>
 
       {/* Table */}
@@ -59,7 +53,11 @@ export default async function ProductsPage({
                   <tr>
                     <th scope="col" className="px-4 py-5 font-medium sm:pl-6">Name</th>
                     <th scope="col" className="px-3 py-5 font-medium">Description</th>
-                    <th scope="col" className="px-3 py-5 font-medium">Price (ARS)</th>
+                    <th scope="col" className="px-3 py-5 font-medium">Price </th>
+                    <th scope="col" className="px-3 py-5 font-medium">Stock</th>
+                    <th scope="col" className="relative py-3 pl-6 pr-3">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 text-gray-900">
@@ -75,12 +73,12 @@ export default async function ProductsPage({
                         ${Number(product.price).toLocaleString('es-AR')}
                       </td>
                       <td className="whitespace-nowrap bg-white px-3 py-5 text-sm">
-                        <Link
-                          href={`/dashboard/products/${product.id}/edit`}
-                          className="rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                        >
-                          Edit
-                        </Link>
+                        {product.stock}
+                      </td>
+                      <td className="whitespace-nowrap bg-white px-3 py-5 text-sm">
+                        <div className="flex justify-end gap-3">
+                          <UpdateProduct id={product.id} />
+                        </div>
                       </td>
                     </tr>
                   ))}
