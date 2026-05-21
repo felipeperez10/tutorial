@@ -234,7 +234,6 @@ export async function fetchFilteredProducts(query: string, currentPage: number) 
         name,
         description,
         price,
-        stock,
         stock
       FROM products
       WHERE
