@@ -6,6 +6,9 @@ import {
   InvoicesTable,
   LatestInvoiceRaw,
   Revenue,
+  ProductsTable,
+  ProductForm,
+  ProductField,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -214,5 +217,96 @@ export async function fetchFilteredCustomers(query: string) {
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
+  }
+}
+
+// ─── Products ────────────────────────────────────────────────────────────────
+
+const PRODUCTS_PER_PAGE = 6;
+
+export async function fetchFilteredProducts(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
+
+  try {
+    const products = await sql<ProductsTable[]>`
+      SELECT
+        id,
+        name,
+        description,
+        price,
+        stock,
+        image_url
+      FROM products
+      WHERE
+        name ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`}
+      ORDER BY name ASC
+      LIMIT ${PRODUCTS_PER_PAGE} OFFSET ${offset}
+    `;
+
+    return products;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch products.');
+  }
+}
+
+export async function fetchProductsPages(query: string) {
+  try {
+    const data = await sql`
+      SELECT COUNT(*)
+      FROM products
+      WHERE
+        name ILIKE ${`%${query}%`} OR
+        description ILIKE ${`%${query}%`}
+    `;
+
+    const totalPages = Math.ceil(Number(data[0].count) / PRODUCTS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of products.');
+  }
+}
+
+export async function fetchProductById(id: string) {
+  try {
+    const data = await sql<ProductForm[]>`
+      SELECT
+        id,
+        name,
+        description,
+        price,
+        stock,
+        image_url
+      FROM products
+      WHERE id = ${id}
+    `;
+
+    const product = data.map((p) => ({
+      ...p,
+      // Convert price from cents to dollars for form display
+      price: p.price / 100,
+    }));
+
+    return product[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch product.');
+  }
+}
+
+export async function fetchProducts() {
+  try {
+    const products = await sql<ProductField[]>`
+      SELECT id, name
+      FROM products
+      ORDER BY name ASC
+    `;
+
+    return products;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch products list.');
   }
 }
