@@ -254,8 +254,7 @@ export async function fetchFilteredProducts(query: string, currentPage: number) 
         name,
         description,
         price,
-        stock,
-        image_url
+        stock
       FROM products
       WHERE
         name ILIKE ${`%${query}%`} OR
@@ -297,19 +296,12 @@ export async function fetchProductById(id: string) {
         name,
         description,
         price,
-        stock,
-        image_url
+        stock
       FROM products
       WHERE id = ${id}
     `;
 
-    const product = data.map((p) => ({
-      ...p,
-      // Convert price from cents to dollars for form display
-      price: p.price / 100,
-    }));
-
-    return product[0];
+    return data[0];
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch product.');

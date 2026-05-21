@@ -93,27 +93,24 @@ export type Product = {
   id: string;
   name: string;
   description: string;
-  price: number;       // stored in cents
+  price: number;
   stock: number;
-  image_url: string;
 };
 
 export type ProductsTable = {
   id: string;
   name: string;
   description: string;
-  price: number;       // stored in cents
+  price: number;
   stock: number;
-  image_url: string;
 };
 
 export type ProductForm = {
   id: string;
   name: string;
   description: string;
-  price: number;       // stored in cents
+  price: number;
   stock: number;
-  image_url: string;
 };
 
 export type ProductField = {
