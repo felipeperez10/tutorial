@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { updateProduct } from '@/app/actions/product';
+import { updateProduct } from '@/app/lib/product';
 import { ProductForm } from '@/app/lib/definitions';
 
 export default function EditProductForm({ product }: { product: ProductForm }) {
@@ -52,7 +52,7 @@ return (
         {/* Price */}
         <div className="mb-4">
           <label htmlFor="price" className="mb-2 block text-sm font-medium">
-            Price (ARS)
+            Price
           </label>
           <input
             id="price"

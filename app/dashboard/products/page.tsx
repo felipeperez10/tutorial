@@ -1,7 +1,7 @@
 import { fetchFilteredProducts, fetchProductsPages } from '@/app/lib/data';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
-import { CreateProduct, UpdateProduct } from '@/app/ui/products/buttons';
+import { CreateProduct, UpdateProduct, DeleteProduct } from '@/app/ui/products/buttons';
 
 export default async function ProductsPage({
   searchParams,
@@ -78,6 +78,7 @@ export default async function ProductsPage({
                       <td className="whitespace-nowrap bg-white px-3 py-5 text-sm">
                         <div className="flex justify-end gap-3">
                           <UpdateProduct id={product.id} />
+                          <DeleteProduct id={product.id} />
                         </div>
                       </td>
                     </tr>
