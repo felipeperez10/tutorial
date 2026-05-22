@@ -1,8 +1,16 @@
-import { Suspense } from 'react';
-import { fetchFilteredCustomers } from '@/app/lib/data';
 import CustomersTable from '@/app/ui/customers/table';
 import { CreateCustomer } from '@/app/ui/customers/buttons';
 import { lusitana } from '@/app/ui/fonts';
+import { FormattedCustomersTable } from '@/app/lib/definitions';
+
+async function getCustomers(query: string): Promise<FormattedCustomersTable[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
+  const res = await fetch(`${baseUrl}/api/customers?query=${encodeURIComponent(query)}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Failed to fetch customers');
+  return res.json();
+}
 
 export default async function Page({
   searchParams,
@@ -11,8 +19,7 @@ export default async function Page({
 }) {
   const resolvedParams = await searchParams;
   const query = resolvedParams?.query ?? '';
-
-  const customers = await fetchFilteredCustomers(query);
+  const customers = await getCustomers(query);
 
   return (
     <div className="w-full">

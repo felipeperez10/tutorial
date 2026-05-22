@@ -1,32 +1,53 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserCircleIcon, EnvelopeIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import { updateCustomer, State } from '@/app/lib/customers';
 import { Customer } from '@/app/lib/definitions';
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      aria-disabled={pending}
-      className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
-    >
-      {pending ? 'Saving...' : 'Save Changes'}
-    </button>
-  );
-}
+type FieldErrors = Record<string, string[]>;
 
 export default function EditForm({ customer }: { customer: Customer }) {
-  const initialState: State = { errors: {}, message: null };
-  const updateCustomerWithId = updateCustomer.bind(null, customer.id);
-  const [state, formAction] = useActionState(updateCustomerWithId, initialState);
+  const router = useRouter();
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setErrors({});
+    setMessage(null);
+
+    const formData = new FormData(e.currentTarget);
+    const body = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      image_url: formData.get('image_url') || undefined,
+    };
+
+    const res = await fetch(`/api/customers/${customer.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrors(data.errors ?? {});
+      setMessage(data.error ?? 'Failed to update customer.');
+      setPending(false);
+      return;
+    }
+
+    router.push('/dashboard/customers');
+    router.refresh();
+  }
 
   return (
-    <form action={formAction}>
+    <form onSubmit={handleSubmit}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
 
         {/* Name */}
@@ -46,11 +67,9 @@ export default function EditForm({ customer }: { customer: Customer }) {
             />
             <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
-          {state.errors?.name && (
+          {errors.name && (
             <div id="name-error" aria-live="polite" className="mt-2 text-sm text-red-500">
-              {state.errors.name.map((err) => (
-                <p key={err}>{err}</p>
-              ))}
+              {errors.name.map((err) => <p key={err}>{err}</p>)}
             </div>
           )}
         </div>
@@ -72,11 +91,9 @@ export default function EditForm({ customer }: { customer: Customer }) {
             />
             <EnvelopeIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
-          {state.errors?.email && (
+          {errors.email && (
             <div id="email-error" aria-live="polite" className="mt-2 text-sm text-red-500">
-              {state.errors.email.map((err) => (
-                <p key={err}>{err}</p>
-              ))}
+              {errors.email.map((err) => <p key={err}>{err}</p>)}
             </div>
           )}
         </div>
@@ -98,19 +115,14 @@ export default function EditForm({ customer }: { customer: Customer }) {
             />
             <PhotoIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
-          {state.errors?.image_url && (
+          {errors.image_url && (
             <div id="image_url-error" aria-live="polite" className="mt-2 text-sm text-red-500">
-              {state.errors.image_url.map((err) => (
-                <p key={err}>{err}</p>
-              ))}
+              {errors.image_url.map((err) => <p key={err}>{err}</p>)}
             </div>
           )}
         </div>
 
-        {/* General error message */}
-        {state.message && (
-          <p className="mt-2 text-sm text-red-500">{state.message}</p>
-        )}
+        {message && <p className="mt-2 text-sm text-red-500">{message}</p>}
       </div>
 
       <div className="mt-6 flex justify-end gap-4">
@@ -120,7 +132,13 @@ export default function EditForm({ customer }: { customer: Customer }) {
         >
           Cancel
         </Link>
-        <SubmitButton />
+        <button
+          type="submit"
+          disabled={pending}
+          className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {pending ? 'Saving...' : 'Save Changes'}
+        </button>
       </div>
     </form>
   );

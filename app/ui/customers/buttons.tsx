@@ -1,6 +1,8 @@
+'use client';
+
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { deleteCustomer } from '@/app/lib/customers';
+import { useRouter } from 'next/navigation';
 
 export function CreateCustomer() {
   return (
@@ -27,13 +29,28 @@ export function UpdateCustomer({ id }: { id: string }) {
 }
 
 export function DeleteCustomer({ id }: { id: string }) {
-  const deleteCustomerWithId = deleteCustomer.bind(null, id);
+  const router = useRouter();
+
+  async function handleDelete() {
+    const confirmed = window.confirm('Are you sure you want to delete this customer?');
+    if (!confirmed) return;
+
+    const res = await fetch(`/api/customers/${id}`, { method: 'DELETE' });
+
+    if (res.ok) {
+      router.refresh();
+    } else {
+      alert('Failed to delete customer.');
+    }
+  }
+
   return (
-    <form action={deleteCustomerWithId}>
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Delete</span>
-        <TrashIcon className="w-5" />
-      </button>
-    </form>
+    <button
+      onClick={handleDelete}
+      className="rounded-md border p-2 hover:bg-gray-100"
+    >
+      <span className="sr-only">Delete</span>
+      <TrashIcon className="w-5" />
+    </button>
   );
 }
