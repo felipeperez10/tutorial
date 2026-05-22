@@ -1,6 +1,8 @@
 import { fetchProductById } from '@/app/lib/data';
-import { updateProduct } from '@/app/actions/product';
 import EditProductForm from '@/app/ui/products/edit-form';
+import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+import { notFound } from 'next/navigation';
+
 export default async function EditProductPage({
   params,
 }: {
@@ -9,11 +11,16 @@ export default async function EditProductPage({
   const { id } = await params;
   const product = await fetchProductById(id);
 
-  if (!product) return <div>Product not found.</div>;
+  if (!product) notFound();
 
   return (
     <main>
-      <h1>Edit Product</h1>
+      <Breadcrumbs
+        breadcrumbs={[
+          { label: 'Products', href: '/dashboard/products' },
+          { label: 'Edit Product', href: `/dashboard/products/${id}/edit`, active: true },
+        ]}
+      />
       <EditProductForm product={product} />
     </main>
   );

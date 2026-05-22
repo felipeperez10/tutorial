@@ -1,8 +1,8 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
 import {
   TagIcon,
   DocumentTextIcon,
@@ -10,24 +10,52 @@ import {
   ArchiveBoxIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { createProduct, State } from '@/app/actions/product';
 
-const initialState: State = { message: null, errors: {} };
+type FieldErrors = Record<string, string[]>;
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" aria-disabled={pending}>
-      {pending ? 'Saving...' : 'Create Product'}
-    </Button>
-  );
-}
 
 export default function CreateProductForm() {
-  const [state, formAction] = useActionState(createProduct, initialState);
+
+  const router = useRouter();
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setErrors({});
+    setMessage(null);
+
+    const formData = new FormData(e.currentTarget);
+    const body = {
+      name: formData.get('name'),
+      description: formData.get('description'),
+      price: Number(formData.get('price')),
+      stock: Number(formData.get('stock')),
+    };
+
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setErrors(data.errors ?? {});
+      setMessage(data.error ?? 'Failed to create product.');
+      setPending(false);
+      return;
+    }
+
+    router.push('/dashboard/products');
+    router.refresh();
+  }
 
   return (
-    <form action={formAction}>
+    <form onSubmit={handleSubmit}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
 
         {/* Name */}
@@ -47,9 +75,11 @@ export default function CreateProductForm() {
             <TagIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
           </div>
           <div id="name-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.name?.map((error) => (
-              <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-            ))}
+            {errors.name && (
+            <div id="name-error" aria-live="polite" className="mt-2 text-sm text-red-500">
+              {errors.name.map((err) => <p key={err}>{err}</p>)}
+            </div>
+          )}
           </div>
         </div>
 
@@ -70,16 +100,19 @@ export default function CreateProductForm() {
             <DocumentTextIcon className="pointer-events-none absolute left-3 top-3 h-[18px] w-[18px] text-gray-500" />
           </div>
           <div id="description-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.description?.map((error) => (
-              <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-            ))}
+            {errors.description && (
+            <div id="description-error" aria-live="polite" className="mt-2 text-sm text-red-500">
+              {errors.description.map((err) => <p key={err}>{err}</p>)}
+            </div>
+          )}
+
           </div>
         </div>
 
         {/* Price */}
         <div className="mb-4">
           <label htmlFor="price" className="mb-2 block text-sm font-medium">
-            Price (ARS)
+            Price
           </label>
           <div className="relative">
             <input
@@ -95,9 +128,11 @@ export default function CreateProductForm() {
             <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
           </div>
           <div id="price-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.price?.map((error) => (
-              <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-            ))}
+            {errors.price && (
+            <div id="price-error" aria-live="polite" className="mt-2 text-sm text-red-500">
+              {errors.price.map((err) => <p key={err}>{err}</p>)}
+            </div>
+          )}
           </div>
         </div>
 
@@ -120,16 +155,16 @@ export default function CreateProductForm() {
             <ArchiveBoxIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
           </div>
           <div id="stock-error" aria-live="polite" aria-atomic="true">
-            {state.errors?.stock?.map((error) => (
-              <p key={error} className="mt-2 text-sm text-red-500">{error}</p>
-            ))}
+            {errors.stock && (
+            <div id="stock-error" aria-live="polite" className="mt-2 text-sm text-red-500">
+              {errors.stock.map((err) => <p key={err}>{err}</p>)}
+            </div>
+          )}
           </div>
         </div>
 
         {/* General error message */}
-        {state.message && (
-          <p className="mt-2 text-sm text-red-500">{state.message}</p>
-        )}
+        {message && <p className="mt-2 text-sm text-red-500">{message}</p>}
       </div>
 
       <div className="mt-6 flex justify-end gap-4">
@@ -139,7 +174,9 @@ export default function CreateProductForm() {
         >
           Cancel
         </Link>
-        <SubmitButton />
+        <Button type="submit" aria-disabled={pending}>
+          {pending ? 'Saving...' : 'Create Product'}
+        </Button>
       </div>
     </form>
   );

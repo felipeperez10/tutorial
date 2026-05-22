@@ -246,7 +246,7 @@ const PRODUCTS_PER_PAGE = 6;
 
 export async function fetchFilteredProducts(query: string, currentPage: number) {
   const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
-
+  
   try {
     const products = await sql<ProductsTable[]>`
       SELECT
