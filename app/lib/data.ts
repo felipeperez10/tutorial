@@ -234,7 +234,7 @@ const PRODUCTS_PER_PAGE = 6;
 export const fetchFilteredProducts = unstable_cache(
   async (query: string, currentPage: number) => {
     const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
-    console.log(`consultando base de datos — query="${query}" page=${currentPage}`);
+    console.log(`Consultando base de datos — query="${query}" page=${currentPage}`);
     try {
       const products = await sql<ProductsTable[]>`
         SELECT
