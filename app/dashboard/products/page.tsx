@@ -1,4 +1,4 @@
-import { fetchFilteredProducts, fetchProductsPages } from '@/app/lib/data';
+import { fetchFilteredProducts } from '@/app/lib/data';
 import { lusitana } from '@/app/ui/fonts';
 import Link from 'next/link';
 import { CreateProduct, UpdateProduct, DeleteProduct } from '@/app/ui/products/buttons';
@@ -53,7 +53,7 @@ export default async function ProductsPage({
                   <tr>
                     <th scope="col" className="px-4 py-5 font-medium sm:pl-6">Name</th>
                     <th scope="col" className="px-3 py-5 font-medium">Description</th>
-                    <th scope="col" className="px-3 py-5 font-medium">Price </th>
+                    <th scope="col" className="px-3 py-5 font-medium">Price</th>
                     <th scope="col" className="px-3 py-5 font-medium">Stock</th>
                     <th scope="col" className="relative py-3 pl-6 pr-3">
                       <span className="sr-only">Actions</span>

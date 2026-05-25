@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { fetchFilteredCustomers } from '@/app/lib/data';
 import CustomersTable from '@/app/ui/customers/table';
 import { CreateCustomer } from '@/app/ui/customers/buttons';

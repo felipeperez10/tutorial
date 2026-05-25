@@ -95,14 +95,13 @@ export async function updateCustomer(
 
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
-export async function deleteCustomer(id: string): Promise<State> {
+export async function deleteCustomer(id: string): Promise<void> {
   try {
     await sql`DELETE FROM customers WHERE id = ${id}`;
   } catch (error) {
     console.error('Database Error:', error);
-    return { message: 'Database Error: Failed to delete customer.' };
+    throw new Error('Database Error: Failed to delete customer.');
   }
 
   revalidatePath('/dashboard/customers');
-  return { message: null };
 }

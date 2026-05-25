@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { unstable_cache } from 'next/cache';
 import {
   Customer,
   CustomerField,
@@ -17,16 +18,7 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 export async function fetchRevenue() {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
-
-    // console.log('Data fetch completed after 3 seconds.');
-
     return data;
   } catch (error) {
     console.error('Database Error:', error);
@@ -56,9 +48,6 @@ export async function fetchLatestInvoices() {
 
 export async function fetchCardData() {
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
     const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
     const invoiceStatusPromise = sql`SELECT
@@ -90,10 +79,8 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
-) {
+
+export async function fetchFilteredInvoices(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -240,85 +227,107 @@ export async function fetchFilteredCustomers(query: string) {
   }
 }
 
-// ─── Products ────────────────────────────────────────────────────────────────
+// ─── Products (cached) ───────────────────────────────────────────────────────
 
 const PRODUCTS_PER_PAGE = 6;
 
-export async function fetchFilteredProducts(query: string, currentPage: number) {
-  const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  
-  try {
-    const products = await sql<ProductsTable[]>`
-      SELECT
-        id,
-        name,
-        description,
-        price,
-        stock
-      FROM products
-      WHERE
-        name ILIKE ${`%${query}%`} OR
-        description ILIKE ${`%${query}%`}
-      ORDER BY name ASC
-      LIMIT ${PRODUCTS_PER_PAGE} OFFSET ${offset}
-    `;
+export const fetchFilteredProducts = unstable_cache(
+  async (query: string, currentPage: number) => {
+    const offset = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    console.log(`consultando base de datos — query="${query}" page=${currentPage}`);
+    try {
+      const products = await sql<ProductsTable[]>`
+        SELECT
+          id,
+          name,
+          description,
+          price,
+          stock
+        FROM products
+        WHERE
+          name ILIKE ${`%${query}%`} OR
+          description ILIKE ${`%${query}%`}
+        ORDER BY name ASC
+        LIMIT ${PRODUCTS_PER_PAGE} OFFSET ${offset}
+      `;
+      
+      return products;
+    } catch (error) {
+      console.error('Database Error:', error);
+      throw new Error('Failed to fetch products.');
+    }
+  },
+  ['filtered-products'],
+  { 
+    tags: ['products'],
+    revalidate :15
+  },
+);
 
-    return products;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch products.');
-  }
-}
+export const fetchProductsPages = unstable_cache(
+  async (query: string) => {
+    try {
+      console.log("Consultando base de datos fetchProductsPages ");
+      const data = await sql`
+        SELECT COUNT(*)
+        FROM products
+        WHERE
+          name ILIKE ${`%${query}%`} OR
+          description ILIKE ${`%${query}%`}
+      `;
 
-export async function fetchProductsPages(query: string) {
-  try {
-    const data = await sql`
-      SELECT COUNT(*)
-      FROM products
-      WHERE
-        name ILIKE ${`%${query}%`} OR
-        description ILIKE ${`%${query}%`}
-    `;
+      const totalPages = Math.ceil(Number(data[0].count) / PRODUCTS_PER_PAGE);
+      return totalPages;
+    } catch (error) {
+      console.error('Database Error:', error);
+      throw new Error('Failed to fetch total number of products.');
+    }
+  },
+  ['products-pages'],
+  { tags: ['products'] },
+);
 
-    const totalPages = Math.ceil(Number(data[0].count) / PRODUCTS_PER_PAGE);
-    return totalPages;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of products.');
-  }
-}
+export const fetchProductById = unstable_cache(
+  async (id: string) => {
+    try {
+      console.log("Consultando base de datos fetchProductById ");
+      const data = await sql<ProductForm[]>`
+        SELECT
+          id,
+          name,
+          description,
+          price,
+          stock
+        FROM products
+        WHERE id = ${id}
+      `;
 
-export async function fetchProductById(id: string) {
-  try {
-    const data = await sql<ProductForm[]>`
-      SELECT
-        id,
-        name,
-        description,
-        price,
-        stock
-      FROM products
-      WHERE id = ${id}
-    `;
+      return data[0];
+    } catch (error) {
+      console.error('Database Error:', error);
+      throw new Error('Failed to fetch product.');
+    }
+  },
+  ['product-by-id'],
+  { tags: ['products'] },
+);
 
-    return data[0];
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch product.');
-  }
-}
+export const fetchProducts = unstable_cache(
+  async () => {
+    console.log('fetchProducts — consultando base de datos');
+    try {
+      const products = await sql<ProductField[]>`
+        SELECT id, name
+        FROM products
+        ORDER BY name ASC
+      `;
 
-export async function fetchProducts() {
-  try {
-    const products = await sql<ProductField[]>`
-      SELECT id, name
-      FROM products
-      ORDER BY name ASC
-    `;
-
-    return products;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch products list.');
-  }
-}
+      return products;
+    } catch (error) {
+      console.error('Database Error:', error);
+      throw new Error('Failed to fetch products list.');
+    }
+  },
+  ['products-list'],
+  { tags: ['products'] },
+);

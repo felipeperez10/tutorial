@@ -2,6 +2,7 @@ import { fetchProductById } from '@/app/lib/data';
 import EditProductForm from '@/app/ui/products/edit-form';
 import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
 import { notFound } from 'next/navigation';
+import { ProductForm } from '@/app/lib/definitions';
 
 export default async function EditProductPage({
   params,
@@ -21,7 +22,7 @@ export default async function EditProductPage({
           { label: 'Edit Product', href: `/dashboard/products/${id}/edit`, active: true },
         ]}
       />
-      <EditProductForm product={product} />
+      <EditProductForm product={product as ProductForm} />
     </main>
   );
 }
